@@ -8,9 +8,9 @@ class PagesController < ApplicationController
     @week_days      = (@start_of_week..@end_of_week).to_a
 
     @bookings = Booking.active
-                       .for_week(@start_of_week)
-                       .includes(:user)
-                       .order(:date, :start_time)
+      .for_week(@start_of_week)
+      .includes(:user)
+      .order(:date, :start_time)
 
     @bookings_by_day = @bookings.group_by(&:date)
   end

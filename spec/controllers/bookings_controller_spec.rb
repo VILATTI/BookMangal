@@ -1,6 +1,8 @@
 require "rails_helper"
 
-RSpec.describe BookingsController, type: :controller do
+RSpec.describe BookingsController do
+  render_views
+
   let(:user)  { create(:user) }
   let(:other) { create(:user) }
 
@@ -12,9 +14,9 @@ RSpec.describe BookingsController, type: :controller do
       expect(response).to have_http_status(:success)
     end
 
-    it "pre-fills date from params" do
+    it "pre-fills date in the form when passed as param" do
       get :new, params: { date: "2025-06-15" }
-      expect(assigns(:booking).date).to eq(Date.parse("2025-06-15"))
+      expect(response.body).to include("2025-06-15")
     end
   end
 
@@ -42,21 +44,21 @@ RSpec.describe BookingsController, type: :controller do
     context "with invalid params" do
       it "does not create a booking when end_time <= start_time" do
         params = { booking: { date: Date.current + 1.day, start_time: "15:00", end_time: "12:00" } }
-        expect { post :create, params: params }.not_to change(Booking, :count)
+        expect { post :create, params: }.not_to change(Booking, :count)
       end
 
-      it "renders new with unprocessable_entity status" do
+      it "renders new with unprocessable_content status" do
         params = { booking: { date: Date.current - 1.day, start_time: "12:00", end_time: "15:00" } }
-        post :create, params: params
-        expect(response).to have_http_status(:unprocessable_entity)
+        post(:create, params:)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
   end
 
   describe "PATCH #update" do
-    let(:booking) { create(:booking, user: user) }
+    let(:booking) { create(:booking, user:) }
 
-    context "as owner" do
+    context "when owner" do
       it "updates the booking" do
         patch :update, params: { id: booking.id, booking: { notes: "Updated" } }
         expect(booking.reload.notes).to eq("Updated")
@@ -68,7 +70,7 @@ RSpec.describe BookingsController, type: :controller do
       end
     end
 
-    context "as non-owner" do
+    context "when non-owner" do
       before { sign_in other }
 
       it "redirects to root with alert" do
@@ -86,9 +88,9 @@ RSpec.describe BookingsController, type: :controller do
   end
 
   describe "PATCH #cancel" do
-    let(:booking) { create(:booking, user: user) }
+    let(:booking) { create(:booking, user:) }
 
-    context "as owner" do
+    context "when owner" do
       it "cancels a confirmed booking" do
         patch :cancel, params: { id: booking.id }
         expect(booking.reload).to be_cancelled
@@ -101,7 +103,7 @@ RSpec.describe BookingsController, type: :controller do
     end
 
     context "when already cancelled" do
-      let(:booking) { create(:booking, :cancelled, user: user) }
+      let(:booking) { create(:booking, :cancelled, user:) }
 
       it "redirects with alert" do
         patch :cancel, params: { id: booking.id }
@@ -109,7 +111,7 @@ RSpec.describe BookingsController, type: :controller do
       end
     end
 
-    context "as non-owner" do
+    context "when non-owner" do
       before { sign_in other }
 
       it "does not cancel the booking" do
@@ -120,15 +122,15 @@ RSpec.describe BookingsController, type: :controller do
   end
 
   describe "DELETE #destroy" do
-    let!(:booking) { create(:booking, user: user) }
+    let!(:booking) { create(:booking, user:) }
 
-    context "as owner" do
+    context "when owner" do
       it "destroys the booking" do
         expect { delete :destroy, params: { id: booking.id } }.to change(Booking, :count).by(-1)
       end
     end
 
-    context "as non-owner" do
+    context "when non-owner" do
       before { sign_in other }
 
       it "does not destroy the booking" do

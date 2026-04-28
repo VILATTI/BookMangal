@@ -12,15 +12,15 @@ class Booking < ApplicationRecord
   validates :start_time, presence: true
   validates :end_time,   presence: true
   validates :date,
-    comparison: { greater_than_or_equal_to: -> { Date.current } },
-    on: :create
+            comparison: { greater_than_or_equal_to: -> { Date.current } },
+            on: :create
 
   validate :end_time_after_start_time
   validate :within_operating_hours
-  validate :no_overlap, on: [:create, :update]
+  validate :no_overlap, on: %i[create update]
 
   scope :active,    -> { where(status: :confirmed) }
-  scope :for_week,  ->(start_date) { where(date: start_date..start_date + 6.days) }
+  scope :for_week,  ->(start_date) { where(date: start_date..(start_date + 6.days)) }
 
   def time_range
     "#{start_time.strftime('%H:%M')} – #{end_time.strftime('%H:%M')}"
@@ -34,21 +34,28 @@ class Booking < ApplicationRecord
 
   def end_time_after_start_time
     return unless start_time && end_time
+
     errors.add(:end_time, "має бути пізніше часу початку") if end_time <= start_time
   end
 
   def within_operating_hours
     return unless start_time && end_time
+
     errors.add(:start_time, "має бути не раніше 08:00") if start_time.hour < OPERATING_START
-    errors.add(:end_time,   "має бути не пізніше 22:00") if end_time.hour > OPERATING_END || (end_time.hour == OPERATING_END && end_time.min > 0)
+    return unless end_time.hour > OPERATING_END || (end_time.hour == OPERATING_END && end_time.min.positive?)
+
+    errors.add(:end_time,
+               "має бути не пізніше 22:00")
   end
 
   def no_overlap
+    return if cancelled?
     return unless date && start_time && end_time
+
     overlapping = Booking.active
-                         .where(date: date)
-                         .where.not(id: id)
-                         .where("start_time < ? AND end_time > ?", end_time, start_time)
+      .where(date:)
+      .where.not(id:)
+      .where("start_time < ? AND end_time > ?", end_time, start_time)
     errors.add(:base, "Цей час вже зайнятий іншим бронюванням") if overlapping.exists?
   end
 end

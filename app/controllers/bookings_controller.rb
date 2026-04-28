@@ -1,6 +1,6 @@
 class BookingsController < ApplicationController
-  before_action :set_booking, only: [:show, :edit, :update, :destroy, :cancel]
-  before_action :authorize_booking!, only: [:edit, :update, :destroy, :cancel]
+  before_action :set_booking, only: %i[show edit update destroy cancel]
+  before_action :authorize_booking!, only: %i[edit update destroy cancel]
 
   def show; end
 
@@ -11,22 +11,23 @@ class BookingsController < ApplicationController
     @booking.end_time   = params[:hour] ? "#{params[:hour].to_i + 2}:00" : "14:00"
   end
 
+  def edit; end
+
   def create
     @booking = current_user.bookings.build(booking_params)
     if @booking.save
-      redirect_to root_path, notice: "Мангал заброньовано! 🎉 #{@booking.date.strftime('%d.%m')} о #{@booking.time_range}"
+      redirect_to root_path,
+                  notice: "Мангал заброньовано! 🎉 #{@booking.date.strftime('%d.%m')} о #{@booking.time_range}"
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
-
-  def edit; end
 
   def update
     if @booking.update(booking_params)
       redirect_to root_path, notice: "Бронювання оновлено ✅"
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -51,7 +52,7 @@ class BookingsController < ApplicationController
   end
 
   def booking_params
-    params.require(:booking).permit(:date, :start_time, :end_time, :notes)
+    params.expect(booking: %i[date start_time end_time notes])
   end
 
   def authorize_booking!

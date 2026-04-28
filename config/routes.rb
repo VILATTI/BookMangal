@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   devise_for :users, controllers: {
     registrations: "users/registrations",
-    sessions:      "users/sessions"
+    sessions: "users/sessions",
   }
 
   root "pages#home"
@@ -10,7 +10,7 @@ Rails.application.routes.draw do
     patch :cancel, on: :member
   end
 
-  resource :profile, only: [:edit, :update]
+  resource :profile, only: %i[edit update]
 
   get "up" => "rails/health#show", as: :rails_health_check
 end

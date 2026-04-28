@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :booking do
-    association :user
+    user
     date       { Date.current + 1.day }
     start_time { "12:00" }
     end_time   { "15:00" }

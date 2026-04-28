@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Booking, type: :model do
+RSpec.describe Booking do
   subject(:booking) { build(:booking) }
 
   # Associations
@@ -20,8 +20,8 @@ RSpec.describe Booking, type: :model do
 
     describe ".active" do
       it "returns only confirmed bookings" do
-        expect(Booking.active).to include(confirmed_booking)
-        expect(Booking.active).not_to include(cancelled_booking)
+        expect(described_class.active).to include(confirmed_booking)
+        expect(described_class.active).not_to include(cancelled_booking)
       end
     end
 
@@ -29,10 +29,16 @@ RSpec.describe Booking, type: :model do
       let(:start_date) { Date.current.beginning_of_week(:monday) }
 
       it "returns bookings within the given week" do
-        booking_this_week  = create(:booking, date: start_date + 2)
-        booking_next_week  = create(:booking, date: start_date + 8)
+        booking_this_week = create(:booking,
+                                   date: start_date + 2,
+                                   start_time: "16:00",
+                                   end_time: "18:00")
+        booking_next_week = create(:booking,
+                                   date: start_date + 8,
+                                   start_time: "16:00",
+                                   end_time: "18:00")
 
-        results = Booking.for_week(start_date)
+        results = described_class.for_week(start_date)
         expect(results).to include(booking_this_week)
         expect(results).not_to include(booking_next_week)
       end
@@ -89,27 +95,27 @@ RSpec.describe Booking, type: :model do
 
       it "is invalid when times overlap with existing booking" do
         overlapping = build(:booking,
-          user:       existing.user,
-          date:       existing.date,
-          start_time: "13:00",
-          end_time:   "16:00")
+                            user: existing.user,
+                            date: existing.date,
+                            start_time: "13:00",
+                            end_time: "16:00")
         expect(overlapping).not_to be_valid
         expect(overlapping.errors[:base]).to be_present
       end
 
       it "is valid when times are adjacent (no overlap)" do
         adjacent = build(:booking,
-          date:       existing.date,
-          start_time: "15:00",
-          end_time:   "18:00")
+                         date: existing.date,
+                         start_time: "15:00",
+                         end_time: "18:00")
         expect(adjacent).to be_valid
       end
 
       it "is valid on a different date" do
         different_day = build(:booking,
-          date:       existing.date + 1,
-          start_time: "12:00",
-          end_time:   "15:00")
+                              date: existing.date + 1,
+                              start_time: "12:00",
+                              end_time: "15:00")
         expect(different_day).to be_valid
       end
     end
@@ -129,16 +135,16 @@ RSpec.describe Booking, type: :model do
 
   describe "#time_range" do
     it "returns formatted time range string" do
-      booking.start_time = Time.parse("12:00")
-      booking.end_time   = Time.parse("15:30")
+      booking.start_time = Time.zone.parse("12:00")
+      booking.end_time   = Time.zone.parse("15:30")
       expect(booking.time_range).to eq("12:00 – 15:30")
     end
   end
 
   describe "#duration_hours" do
     it "calculates the duration correctly" do
-      booking.start_time = Time.parse("10:00")
-      booking.end_time   = Time.parse("13:00")
+      booking.start_time = Time.zone.parse("10:00")
+      booking.end_time   = Time.zone.parse("13:00")
       expect(booking.duration_hours).to eq(3.0)
     end
   end
