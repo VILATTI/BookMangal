@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+
+# Logs and tmp
+log/*
+tmp/*
+!log/.keep
+!tmp/.keep
+
+# Test artifacts
+spec/examples.txt
+coverage/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+*.swp
+
+# Docker
+.dockerignore
+docker-compose*.yml
+
+# Env files
+.env
+.env.*
+!.env.example

@@ -1,0 +1,40 @@
+name: bookmangal
+
+services:
+  db_test:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER:     bookmangal
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB:       bookmangal_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookmangal"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  test:
+    build:
+      context: .
+      target: development
+    command: >
+      bash -c "
+        bundle exec rails db:prepare &&
+        bundle exec rspec --format documentation
+      "
+    depends_on:
+      db_test:
+        condition: service_healthy
+    environment:
+      RAILS_ENV:    test
+      DB_HOST:      db_test
+      DB_PORT:      5432
+      DB_USERNAME:  bookmangal
+      DB_PASSWORD:  password
+      SECRET_KEY_BASE: test_secret_key_base
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+
+volumes:
+  bundle_cache:

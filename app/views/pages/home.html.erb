@@ -1,0 +1,237 @@
+<%# ===== Hero для незалогованих ===== %>
+<% unless user_signed_in? %>
+  <div class="relative mb-8 bg-gradient-to-br from-orange-500 via-red-500 to-orange-600 rounded-3xl p-8 sm:p-12 text-white overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-4 right-8 text-8xl">🥩</div>
+      <div class="absolute bottom-4 left-8 text-6xl">🌿</div>
+    </div>
+    <div class="relative z-10">
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">Бронюй мангал онлайн 🔥</h1>
+      <p class="text-orange-100 text-lg mb-6 max-w-lg">
+        Вибери зручний час, запроси друзів і насолоджуйся пікніком без зайвих клопотів.
+      </p>
+      <div class="flex gap-3 flex-wrap">
+        <%= link_to "Зареєструватись", new_user_registration_path,
+              class: "bg-white text-orange-600 font-bold px-6 py-3 rounded-xl hover:bg-orange-50 transition-colors shadow-lg" %>
+        <%= link_to "Увійти", new_user_session_path,
+              class: "border-2 border-white/60 text-white font-semibold px-6 py-3 rounded-xl hover:bg-white/10 transition-colors" %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<%# ===== Заголовок + навігація по тижнях ===== %>
+<div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+  <div>
+    <h2 class="text-2xl font-bold text-stone-800">Календар бронювань</h2>
+    <p class="text-stone-500 text-sm mt-0.5">
+      <%= @start_of_week.strftime("%-d %B") %> – <%= @end_of_week.strftime("%-d %B %Y") %>
+    </p>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <% if @week_offset != 0 %>
+      <%= link_to root_path,
+            class: "text-xs text-orange-500 hover:text-orange-700 font-medium px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors" do %>
+        Сьогодні
+      <% end %>
+    <% end %>
+
+    <%= link_to root_path(week_offset: @week_offset - 1),
+          class: "p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-xl transition-colors",
+          title: "Попередній тиждень" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    <% end %>
+
+    <%= link_to root_path(week_offset: @week_offset + 1),
+          class: "p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-xl transition-colors",
+          title: "Наступний тиждень" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+    <% end %>
+  </div>
+</div>
+
+<%# ===== Десктоп: Таблиця-сітка ===== %>
+<div class="hidden md:block">
+  <div class="grid grid-cols-7 gap-3">
+    <% @week_days.each do |day| %>
+      <%
+        is_today    = day == Date.current
+        is_past     = day < Date.current
+        day_bookings = @bookings_by_day[day] || []
+      %>
+      <div class="<%= is_past ? 'opacity-60' : '' %> flex flex-col">
+        <%# Заголовок дня %>
+        <div class="text-center mb-2">
+          <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider">
+            <%= I18n.l(day, format: "%a") rescue day.strftime("%a") %>
+          </p>
+          <div class="inline-flex items-center justify-center w-9 h-9 mx-auto mt-1
+                      <%= is_today ? 'bg-orange-500 text-white shadow-md' : 'text-stone-700' %>
+                      rounded-full text-sm font-bold">
+            <%= day.day %>
+          </div>
+        </div>
+
+        <%# Комірка дня %>
+        <div class="flex-1 bg-white border border-stone-200 rounded-2xl p-2 min-h-[140px] space-y-1.5
+                    <%= is_today ? 'border-orange-300 ring-1 ring-orange-200' : '' %>
+                    <%= !is_past && user_signed_in? ? 'hover:border-orange-200 transition-colors' : '' %>">
+
+          <% day_bookings.each do |booking| %>
+            <div class="<%= booking.user == current_user ? 'bg-orange-100 border-orange-300' : 'bg-stone-100 border-stone-200' %>
+                        border rounded-xl px-2.5 py-2 text-xs group relative">
+              <p class="font-semibold text-stone-800 truncate">
+                🔥 <%= booking.user.name.split.first %>
+              </p>
+              <p class="text-stone-500 mt-0.5"><%= booking.time_range %></p>
+              <% if booking.notes.present? %>
+                <p class="text-stone-400 text-[10px] mt-0.5 truncate italic"><%= booking.notes %></p>
+              <% end %>
+
+              <% if user_signed_in? && booking.user == current_user %>
+                <div class="absolute top-1.5 right-1.5 hidden group-hover:flex gap-1">
+                  <%= link_to edit_booking_path(booking),
+                        class: "w-5 h-5 bg-white rounded-md flex items-center justify-center shadow-sm hover:bg-orange-50 transition-colors",
+                        title: "Редагувати" do %>
+                    <svg class="w-3 h-3 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  <% end %>
+                  <%= button_to cancel_booking_path(booking), method: :patch,
+                        class: "w-5 h-5 bg-white rounded-md flex items-center justify-center shadow-sm hover:bg-red-50 transition-colors",
+                        title: "Скасувати",
+                        data: { turbo_confirm: "Скасувати бронювання?" } do %>
+                    <svg class="w-3 h-3 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% if !is_past && user_signed_in? && day_bookings.empty? %>
+            <%= link_to new_booking_path(date: day),
+                  class: "flex items-center justify-center w-full h-10 text-stone-300 hover:text-orange-400 hover:bg-orange-50 rounded-xl transition-colors border border-dashed border-stone-200 hover:border-orange-300",
+                  title: "Забронювати #{day.strftime('%d.%m')}" do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+            <% end %>
+          <% end %>
+
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%# ===== Мобільний список ===== %>
+<div class="md:hidden space-y-4">
+  <% @week_days.each do |day| %>
+    <%
+      is_today     = day == Date.current
+      is_past      = day < Date.current
+      day_bookings = @bookings_by_day[day] || []
+    %>
+    <div class="bg-white border border-stone-200 rounded-2xl overflow-hidden
+                <%= is_today ? 'border-orange-300 ring-1 ring-orange-200' : '' %>
+                <%= is_past ? 'opacity-60' : '' %>">
+
+      <%# День заголовок %>
+      <div class="flex items-center justify-between px-4 py-3 bg-stone-50 border-b border-stone-100">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 flex items-center justify-center rounded-full
+                      <%= is_today ? 'bg-orange-500 text-white' : 'text-stone-700' %>
+                      font-bold text-sm">
+            <%= day.day %>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-stone-800">
+              <%= I18n.l(day, format: "%A") rescue day.strftime("%A") %>
+            </p>
+            <p class="text-xs text-stone-400"><%= day.strftime("%-d %B") %></p>
+          </div>
+        </div>
+        <% if !is_past && user_signed_in? %>
+          <%= link_to new_booking_path(date: day),
+                class: "p-2 text-orange-500 hover:bg-orange-50 rounded-xl transition-colors" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+          <% end %>
+        <% end %>
+      </div>
+
+      <%# Бронювання %>
+      <% if day_bookings.any? %>
+        <div class="divide-y divide-stone-100">
+          <% day_bookings.each do |booking| %>
+            <div class="flex items-center justify-between px-4 py-3">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm
+                            <%= booking.user == current_user ? 'bg-orange-100' : 'bg-stone-100' %>">
+                  🔥
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-stone-800"><%= booking.user.name %></p>
+                  <p class="text-xs text-stone-400"><%= booking.time_range %></p>
+                </div>
+              </div>
+              <% if user_signed_in? && booking.user == current_user %>
+                <div class="flex gap-1.5">
+                  <%= link_to edit_booking_path(booking),
+                        class: "p-1.5 text-stone-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors" do %>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  <% end %>
+                  <%= button_to cancel_booking_path(booking), method: :patch,
+                        class: "p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors",
+                        data: { turbo_confirm: "Скасувати бронювання?" } do %>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="px-4 py-4 text-center text-sm text-stone-300">
+          <% if is_past %>
+            Немає бронювань
+          <% else %>
+            Вільно 🌿
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<%# ===== Легенда ===== %>
+<% if user_signed_in? %>
+  <div class="mt-6 flex items-center gap-4 text-xs text-stone-400 flex-wrap">
+    <div class="flex items-center gap-1.5">
+      <div class="w-3 h-3 rounded-full bg-orange-200 border border-orange-300"></div>
+      Мої бронювання
+    </div>
+    <div class="flex items-center gap-1.5">
+      <div class="w-3 h-3 rounded-full bg-stone-200 border border-stone-300"></div>
+      Чужі бронювання
+    </div>
+    <div class="hidden md:flex items-center gap-1.5">
+      <svg class="w-3 h-3 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      Наведи на бронювання для редагування
+    </div>
+  </div>
+<% end %>

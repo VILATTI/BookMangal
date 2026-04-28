@@ -1,0 +1,66 @@
+<div class="max-w-md mx-auto">
+  <div class="text-center mb-8">
+    <div class="inline-flex w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl
+                items-center justify-center text-3xl shadow-lg mb-4">
+      🥩
+    </div>
+    <h1 class="text-2xl font-bold text-stone-800">Реєстрація</h1>
+    <p class="text-stone-500 text-sm mt-1">Створіть акаунт і починайте бронювати!</p>
+  </div>
+
+  <div class="bg-white border border-stone-200 rounded-2xl p-6 shadow-sm">
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), class: "space-y-5") do |f| %>
+
+      <% if resource.errors.any? %>
+        <div class="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          <ul class="text-sm text-red-600 space-y-0.5 list-disc list-inside">
+            <% resource.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.label :name, "Ваше ім'я", class: "block text-sm font-semibold text-stone-700 mb-1.5" %>
+        <%= f.text_field :name, autofocus: true, autocomplete: "name",
+              placeholder: "Іван Петренко",
+              class: "w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm
+                      focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors" %>
+      </div>
+
+      <div>
+        <%= f.label :email, "Email", class: "block text-sm font-semibold text-stone-700 mb-1.5" %>
+        <%= f.email_field :email, autocomplete: "email",
+              class: "w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm
+                      focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors" %>
+      </div>
+
+      <div>
+        <%= f.label :password, "Пароль", class: "block text-sm font-semibold text-stone-700 mb-1.5" %>
+        <%= f.password_field :password, autocomplete: "new-password",
+              class: "w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm
+                      focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors" %>
+        <p class="text-xs text-stone-400 mt-1">Мінімум 6 символів</p>
+      </div>
+
+      <div>
+        <%= f.label :password_confirmation, "Підтвердження пароля",
+              class: "block text-sm font-semibold text-stone-700 mb-1.5" %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password",
+              class: "w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm
+                      focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors" %>
+      </div>
+
+      <%= f.submit "Зареєструватись",
+            class: "w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3
+                    rounded-xl transition-colors shadow-sm cursor-pointer text-sm" %>
+    <% end %>
+  </div>
+
+  <p class="text-center text-sm text-stone-500 mt-4">
+    Вже є акаунт?
+    <%= link_to "Увійти", new_user_session_path,
+          class: "text-orange-500 hover:text-orange-700 font-semibold" %>
+  </p>
+</div>

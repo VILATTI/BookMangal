@@ -1,0 +1,15 @@
+#!/bin/bash -e
+
+# Wait for Postgres to be ready
+until pg_isready -h "${DB_HOST:-db}" -p "${DB_PORT:-5432}" -U "${DB_USERNAME:-bookmangal}" > /dev/null 2>&1; do
+  echo "Waiting for PostgreSQL..."
+  sleep 1
+done
+
+# Run migrations
+if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
+  echo "Running migrations..."
+  bundle exec rails db:migrate
+fi
+
+exec "$@"

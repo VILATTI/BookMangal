@@ -1,0 +1,105 @@
+require:
+  - rubocop-rails
+  - rubocop-rspec
+  - rubocop-performance
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.2
+  Exclude:
+    - "bin/**/*"
+    - "db/schema.rb"
+    - "db/migrate/**/*"
+    - "node_modules/**/*"
+    - "vendor/**/*"
+    - "config/initializers/devise.rb"
+    - "spec/spec_helper.rb"
+
+# ── Layout ────────────────────────────────────────────────
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - "spec/**/*"
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+# ── Style ─────────────────────────────────────────────────
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/SymbolArray:
+  EnforcedStyle: percent
+
+Style/WordArray:
+  EnforcedStyle: percent
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+
+Style/HashSyntax:
+  EnforcedShorthandSyntax: always
+
+Style/Lambda:
+  EnforcedStyle: stabby_lambda
+
+# ── Metrics ───────────────────────────────────────────────
+Metrics/MethodLength:
+  Max: 20
+  Exclude:
+    - "spec/**/*"
+    - "app/views/**/*"
+
+Metrics/BlockLength:
+  Exclude:
+    - "spec/**/*"
+    - "config/**/*"
+    - "Gemfile"
+
+Metrics/AbcSize:
+  Max: 25
+
+Metrics/ClassLength:
+  Max: 150
+
+# ── Rails ─────────────────────────────────────────────────
+Rails/FilePath:
+  EnforcedStyle: slashes
+
+Rails/Output:
+  Exclude:
+    - "db/seeds.rb"
+
+Rails/I18nLocaleTexts:
+  Enabled: false
+
+Rails/SkipsModelValidations:
+  Enabled: true
+  AllowedMethods:
+    - update_column
+    - update_columns
+
+# ── RSpec ─────────────────────────────────────────────────
+RSpec/ExampleLength:
+  Max: 20
+
+RSpec/MultipleExpectations:
+  Max: 5
+
+RSpec/NestedGroups:
+  Max: 4
+
+RSpec/LetSetup:
+  Enabled: false
+
+RSpec/NoExpectationExample:
+  Enabled: false

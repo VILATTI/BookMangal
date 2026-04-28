@@ -1,0 +1,40 @@
+# Bundler
+/.bundle
+/vendor/bundle
+
+# Env & secrets
+.env
+/config/master.key
+/config/credentials/*.key
+
+# Database
+/db/*.sqlite3
+/db/*.sqlite3-*
+
+# Storage
+/storage/*
+!/storage/.keep
+
+# Compiled assets
+/public/assets
+/public/packs
+/app/assets/builds/*
+!/app/assets/builds/.keep
+
+# Logs and tmp
+/log/*
+!/log/.keep
+/tmp/*
+!/tmp/.keep
+
+# Node
+/node_modules
+
+# OS
+.DS_Store
+*.swp
+*.swo
+
+# RSpec
+/spec/examples.txt
+/coverage/

@@ -1,0 +1,52 @@
+name: bookmangal
+
+services:
+  # ── PostgreSQL ───────────────────────────────────────────────
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     ${DB_USERNAME:-bookmangal}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB:       bookmangal_development
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-bookmangal} -d bookmangal_development"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Rails App ────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      target: development
+    command: >
+      bash -c "
+        bundle exec rails db:prepare &&
+        bundle exec rails tailwindcss:build &&
+        bundle exec rails server -b 0.0.0.0
+      "
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      RAILS_ENV:       development
+      DB_HOST:         db
+      DB_PORT:         5432
+      DB_USERNAME:     ${DB_USERNAME:-bookmangal}
+      DB_PASSWORD:     ${DB_PASSWORD:-password}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-dev_secret_key_base_change_in_production}
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
+  bundle_cache:

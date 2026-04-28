@@ -1,0 +1,132 @@
+<div class="max-w-lg mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-stone-800">👤 Мій профіль</h1>
+    <p class="text-stone-500 text-sm mt-1">Змініть дані свого облікового запису</p>
+  </div>
+
+  <div class="bg-white border border-stone-200 rounded-2xl shadow-sm overflow-hidden">
+
+    <%# Аватар %>
+    <div class="bg-gradient-to-br from-orange-400 to-red-500 px-6 py-8 flex items-center gap-4">
+      <div class="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center
+                  text-white font-bold text-2xl">
+        <%= current_user.initials %>
+      </div>
+      <div>
+        <p class="text-white font-bold text-lg"><%= current_user.name %></p>
+        <p class="text-orange-100 text-sm"><%= current_user.email %></p>
+        <p class="text-orange-200 text-xs mt-1">
+          <%= current_user.bookings.active.count %> активних бронювань
+        </p>
+      </div>
+    </div>
+
+    <%# Форма %>
+    <div class="p-6">
+      <%= form_with model: current_user, url: profile_path, method: :patch, class: "space-y-5" do |f| %>
+
+        <% if current_user.errors.any? %>
+          <div class="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+            <ul class="text-sm text-red-600 space-y-0.5 list-disc list-inside">
+              <% current_user.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <%# Ім'я %>
+        <div>
+          <%= f.label :name, "Ім'я", class: "block text-sm font-semibold text-stone-700 mb-1.5" %>
+          <%= f.text_field :name,
+                class: "w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors" %>
+        </div>
+
+        <%# Email %>
+        <div>
+          <%= f.label :email, "Email", class: "block text-sm font-semibold text-stone-700 mb-1.5" %>
+          <%= f.email_field :email,
+                class: "w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors" %>
+        </div>
+
+        <hr class="border-stone-100">
+
+        <p class="text-xs text-stone-400 font-medium uppercase tracking-wider">Зміна пароля (необов'язково)</p>
+
+        <%# Новий пароль %>
+        <div>
+          <%= f.label :password, "Новий пароль", class: "block text-sm font-semibold text-stone-700 mb-1.5" %>
+          <%= f.password_field :password,
+                placeholder: "Залиште пустим, щоб не змінювати",
+                autocomplete: "new-password",
+                class: "w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors" %>
+        </div>
+
+        <%# Підтвердження %>
+        <div>
+          <%= f.label :password_confirmation, "Підтвердження пароля",
+                class: "block text-sm font-semibold text-stone-700 mb-1.5" %>
+          <%= f.password_field :password_confirmation,
+                autocomplete: "new-password",
+                class: "w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors" %>
+        </div>
+
+        <hr class="border-stone-100">
+
+        <%# Поточний пароль (обов'язковий) %>
+        <div>
+          <%= f.label :current_password, "Поточний пароль",
+                class: "block text-sm font-semibold text-stone-700 mb-1.5" %>
+          <%= f.password_field :current_password,
+                autocomplete: "current-password",
+                class: "w-full border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-colors" %>
+          <p class="text-xs text-stone-400 mt-1">Потрібен для підтвердження будь-яких змін</p>
+        </div>
+
+        <%= f.submit "Зберегти зміни",
+              class: "w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3
+                      rounded-xl transition-colors shadow-sm cursor-pointer text-sm" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Мої бронювання %>
+  <div class="mt-6 bg-white border border-stone-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="px-5 py-4 border-b border-stone-100">
+      <h3 class="font-semibold text-stone-800">Мої бронювання</h3>
+    </div>
+    <% my_bookings = current_user.bookings.active.order(date: :asc).limit(5) %>
+    <% if my_bookings.any? %>
+      <div class="divide-y divide-stone-100">
+        <% my_bookings.each do |booking| %>
+          <div class="flex items-center justify-between px-5 py-3.5">
+            <div>
+              <p class="text-sm font-medium text-stone-800">
+                <%= booking.date.strftime("%-d %B %Y") %>
+              </p>
+              <p class="text-xs text-stone-400"><%= booking.time_range %></p>
+            </div>
+            <div class="flex gap-2">
+              <%= link_to edit_booking_path(booking),
+                    class: "text-xs text-orange-500 hover:text-orange-700 font-medium px-3 py-1.5
+                            bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors" do %>
+                Змінити
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="px-5 py-6 text-center text-sm text-stone-400">
+        У вас ще немає активних бронювань.
+        <%= link_to "Забронювати мангал →", new_booking_path,
+              class: "text-orange-500 hover:text-orange-700 font-medium" %>
+      </div>
+    <% end %>
+  </div>
+</div>
